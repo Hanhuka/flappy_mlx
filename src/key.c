@@ -40,26 +40,15 @@ int key_up(int code, t_flappy *flappy) {
 		}
 		if (code == XK_Right)
 		{
-			flappy->selection += 1;
-			flappy->selection = flappy->selection % SETTINGS_SIZE;
-
-		}
-		else if (code == XK_Left)
-		{
-			flappy->selection -= 1;
-			printf("flappy selection = %d\n", flappy->selection);
-			flappy->selection = flappy->selection % SETTINGS_SIZE;
-		}
-		else if (code == XK_Up)
-		{
 			int upper_limit = 400;
 			if ((flappy->settings[flappy->selection] + 10) >= upper_limit)
 				return 0;
 			flappy->settings[flappy->selection] += 10;
 			delete_wall(flappy);
 			create_wall(flappy);
+
 		}
-		else if (code == XK_Down)
+		else if (code == XK_Left)
 		{
 			int	lower_limit = 0;
 
@@ -68,6 +57,23 @@ int key_up(int code, t_flappy *flappy) {
 			flappy->settings[flappy->selection] -= 10;
 			delete_wall(flappy);
 			create_wall(flappy);
+		}
+		else if (code == XK_Up)
+		{
+			flappy->selection -= 1;
+						// printf("flappy selection = %d\n", flappy->selection);
+			if (flappy->selection < 0 )
+				flappy->selection = SETTINGS_SIZE;
+
+			// flappy->selection = flappy->selection % SETTINGS_SIZE;
+						// printf("flappy selection after = %d\n", flappy->selection);
+
+
+		}
+		else if (code == XK_Down)
+		{
+			flappy->selection += 1;
+			flappy->selection = flappy->selection % SETTINGS_SIZE;
 		}
 	}
 	return 0;

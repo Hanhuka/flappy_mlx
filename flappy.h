@@ -90,6 +90,7 @@ typedef struct s_flappy {
 	t_img	floor2;
 	t_img	background;
 	t_img	font;
+	t_img	font_selected;
 	int		key_space;
 	int		settings[3];
 }			t_flappy;
@@ -109,6 +110,6 @@ void	check_for_walls(t_flappy *flappy);
 void	move_walls(t_flappy *flappy);
 void	create_wall(t_flappy *flappy);
 void	delete_wall(t_flappy *flappy);
-void	print_character(t_flappy *flappy, char c, int x_start, int y_start, int width, int height);
-void	print_phrase(t_flappy *flappy, char *str, int x_start, int y_start, int width, int height, int spacing);
+void	print_character(t_flappy *flappy, char c, int x_start, int y_start, int width, int height, t_img *font);
+void	print_phrase(t_flappy *flappy, char *str, int x_start, int y_start, int width, int height, int spacing, t_img *font);
 char	*ft_itoa(int n);
