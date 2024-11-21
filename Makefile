@@ -19,7 +19,7 @@ NAME		=	flappy
 
 INCLUDE		=	-I ./
 SRCS_		=	\
-				flappy.c img_utils.c key.c
+				flappy.c img_utils.c key.c utils.c
 
 SRCS		=	$(addprefix $(_SRC), $(SRCS_))
 

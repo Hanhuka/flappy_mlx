@@ -157,11 +157,13 @@ void	create_wall(t_flappy *flappy) {
 	if (new_wall->gap_start >= HEIGHT - new_wall->gap_size)
 		new_wall->gap_start = HEIGHT - new_wall->gap_size + 10;
 	new_wall->width = flappy->settings[PILLAR_WIDTH];
-	new_wall->x = WIDTH - 20;
+	new_wall->x = WIDTH - new_wall->width;
+	// if (i > 0)
+	// new_wall->width
 	flappy->wall_gap = flappy->settings[WALL_GAP];
-	// printf("creating upper rectangle with size w[%d]h[%d]\n", new_wall->width, new_wall->gap_start);
+	printf("creating upper rectangle with size w[%d]h[%d]\n", new_wall->width, new_wall->gap_start);
 	create_rectangle(flappy->mlx, &new_wall->upper, new_wall->width, new_wall->gap_start, 0x00AA55AA);
-	// printf("creating lower rectangle with size w[%d]h[%d]\n", new_wall->width, HEIGHT - new_wall->gap_start - new_wall->gap_size);
+	printf("creating lower rectangle with size w[%d]h[%d]\n", new_wall->width, HEIGHT - new_wall->gap_start - new_wall->gap_size);
 	// printf("height = %d\n, gap start =%d\n size = %d\n", HEIGHT, new_wall->gap_start, new_wall->gap_size);
 	create_rectangle(flappy->mlx, &new_wall->lower, new_wall->width, HEIGHT - new_wall->gap_start - new_wall->gap_size, 0x00AA55AA);
 	for (i = 0; tmp && tmp[i]; i++)
@@ -188,35 +190,82 @@ void	print_walls(t_flappy *flappy) {
 }
 
 int game_engine(t_flappy *flappy) {
+	create_image(flappy->mlx, &flappy->frame, WIDTH, HEIGHT);
 	if (flappy->g_state == MENU)
 	{
+		char *nbr = ft_itoa(flappy->settings[flappy->selection]);
+		if (flappy->selection == PILLAR_GAP)
+			print_phrase(flappy, "pillar gap", 20, 20, 50, 40, 10);
+		else if (flappy->selection == WALL_GAP)
+			print_phrase(flappy, "wall gap", 20, 20, 50, 40, 10);
+		else
+			print_phrase(flappy, "wall width", 20, 20, 50, 40, 10);
+		print_phrase(flappy, nbr, 800, 20, 50, 40, 10);
+		free(nbr);
+		// print_phrase(flappy, "abcdefghijklmnopqrstuvwxyz", 20, 200, 100, 80, 10);
 
-		return 0;
 	}
 	//move
 	//draw
 	if (flappy->g_state == PLAYING)
 	{
 		y_movement(flappy);
-		check_for_walls(flappy);
 		move_walls(flappy);
 	}
-	create_image(flappy->mlx, &flappy->frame, WIDTH, HEIGHT);
+	check_for_walls(flappy);
 	print_to_frame(&flappy->player, &flappy->frame, flappy->px, flappy->py);
+	
 	print_walls(flappy);
 	mlx_clear_window(flappy->mlx, flappy->win);
 	mlx_put_image_to_window(flappy->mlx, flappy->win, flappy->frame.img, 0, 0);
 	mlx_destroy_image(flappy->mlx, flappy->frame.img);
 }
 
+void	print_phrase(t_flappy *flappy, char *str, int x_start, int y_start, int width, int height, int spacing) {
+
+	for (int i = 0; str && str[i]; i++) {
+		print_character(flappy, str[i], x_start + (i * (width + spacing)), y_start, width, height);
+	}
+}
+
+void	print_character(t_flappy *flappy, char c, int x_start, int y_start, int width, int height) {
+	// WIDTH = 9
+	// HEIGHT = 7
+	int start;
+	if (width <= 0 || height <= 0)
+	{
+		printf("width or height < 0\n");
+		return ;
+	}
+	// printf("character = [%c]\n", c);
+	if (c >= 'a' && c <= 'z')
+		start = 9 * 10 + (c - 'a') * 9;
+	else if (c >= '0' && c <= '9')
+		start = (c - '0') * 9;
+	else
+		return ;
+	// printf("start = %d\n", start);
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			// printf("putting pixel at x[%d]y[%d]\n", x_start + x, y_start + y);
+			my_mlx_pixel_put(&flappy->frame, x_start + x, y_start + y, get_image_color(&flappy->font, ((double)x / (double)width) * 9.0 + (double) start, ((double)y / (double)height) * 7.0));
+		}
+	}
+
+}
 
 void	init_flappy(t_flappy *flappy) {
+	int h;
+	int w;
 	flappy->mlx = mlx_init();
 	flappy->win = mlx_new_window(flappy->mlx, WIDTH, HEIGHT, "YAAA");
 	create_square(flappy->mlx, &flappy->player, 64, 0x00FF0000);
 	create_square(flappy->mlx, &flappy->floor, 64, 0x00FF00FF);
 	create_square(flappy->mlx, &flappy->floor2, 64, 0x00FF55FF);
-	flappy->state = MENU;
+	create_xpm_image(flappy->mlx, &flappy->font, "font.xpm");
+	flappy->g_state = MENU;
 	flappy->px = WIDTH/2;
 	flappy->py = HEIGHT/2;
 	flappy->key_space = 0;
@@ -224,6 +273,7 @@ void	init_flappy(t_flappy *flappy) {
 	flappy->jumping_speed = 8.0;
 	flappy->wall_gap = 20;
 	flappy->walls = NULL;
+	flappy->selection = 0;
 	flappy->settings[PILLAR_GAP] = 200;
 	flappy->settings[WALL_GAP] = 500;
 	flappy->settings[PILLAR_WIDTH] = 50;

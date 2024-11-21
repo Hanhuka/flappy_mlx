@@ -58,3 +58,16 @@ void	create_image(void *mlx, t_img *data, int width, int height) {
 	data->addr = mlx_get_data_addr(data->img, &data->bits_per_pixel,
 			&data->line_length, &data->endian);
 }
+
+void	create_xpm_image(void *mlx, t_img *data, char *name) {
+	int	width;
+	int	height;
+
+	data->img = mlx_xpm_file_to_image(mlx, name, &width, &height);
+	if (!data->img)
+		return;
+	data->width = width;
+	data->height = height;
+	data->addr = mlx_get_data_addr(data->img, &data->bits_per_pixel,
+			&data->line_length, &data->endian);
+}

@@ -13,7 +13,7 @@
 #ifndef FLAPPY_H
 # define FLAPPY_H
 
-# define WIDTH 2000
+# define WIDTH 1920
 # define HEIGHT 1000
 
 // # include <mlx.h>
@@ -27,6 +27,8 @@
 # include <sys/time.h>
 # include <math.h>
 # include "X11/keysym.h"
+# include <string.h>
+# include <stdlib.h>
 
 # define SPATH "sprites/"
 
@@ -87,6 +89,7 @@ typedef struct s_flappy {
 	t_img	floor;
 	t_img	floor2;
 	t_img	background;
+	t_img	font;
 	int		key_space;
 	int		settings[3];
 }			t_flappy;
@@ -101,7 +104,11 @@ int		key_up(int code, t_flappy *flappy);
 int		key_hook(int code, t_flappy *flappy);
 int		close_game(t_flappy *flappy);
 void	create_image(void *mlx, t_img *data, int width, int height);
+void	create_xpm_image(void *mlx, t_img *data, char *name);
 void	check_for_walls(t_flappy *flappy);
 void	move_walls(t_flappy *flappy);
 void	create_wall(t_flappy *flappy);
 void	delete_wall(t_flappy *flappy);
+void	print_character(t_flappy *flappy, char c, int x_start, int y_start, int width, int height);
+void	print_phrase(t_flappy *flappy, char *str, int x_start, int y_start, int width, int height, int spacing);
+char	*ft_itoa(int n);
