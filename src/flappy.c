@@ -107,7 +107,7 @@ void	move_walls(t_flappy *flappy) {
 	if (!flappy->walls)
 		return ;
 	for (int i = 0; flappy->walls[i]; i++)
-		flappy->walls[i]->x -= 10;
+		flappy->walls[i]->x -= 2;
 }
 
 void	delete_wall(t_flappy *flappy) {
@@ -144,16 +144,10 @@ void	create_wall(t_flappy *flappy) {
 	flappy->walls = malloc(sizeof(t_walls *) * (walls_size(tmp) + 2));
 	new_wall = malloc(sizeof(t_walls));
 	// printf("new_wall = %p\n", new_wall);
-	new_wall->gap_size = 192;
+	new_wall->gap_size = flappy->settings[PILLAR_GAP];
 	i = walls_size(tmp);
 	if (i > 0)
-	{
-		// printf("RAND!!!!!!!!!!!!! %d\n", rand() % 5 - 2);
-		// printf("wall size = %d\n", i);
-		// printf("flappy->walls[%d] = %p\n", i - 1, tmp[i - 1]);
 		new_wall->gap_start = 64 * (rand() % 5 - 2) + tmp[i - 1]->gap_start;
-		// printf("gap_start = %d\n", new_wall->gap_start);
-	}
 	else
 		new_wall->gap_start = 64 * (rand() % (HEIGHT/64) - 1);
 	if (new_wall->gap_start < 0)
@@ -161,10 +155,10 @@ void	create_wall(t_flappy *flappy) {
 	// printf("original gap start = %d\n", new_wall->gap_start);
 	// printf("height - gap.size = %d\n", HEIGHT - new_wall->gap_size);
 	if (new_wall->gap_start >= HEIGHT - new_wall->gap_size)
-		new_wall->gap_start = HEIGHT - 320;
-	new_wall->width = 20;
+		new_wall->gap_start = HEIGHT - new_wall->gap_size + 10;
+	new_wall->width = flappy->settings[PILLAR_WIDTH];
 	new_wall->x = WIDTH - 20;
-	flappy->wall_gap = 1000;
+	flappy->wall_gap = flappy->settings[WALL_GAP];
 	// printf("creating upper rectangle with size w[%d]h[%d]\n", new_wall->width, new_wall->gap_start);
 	create_rectangle(flappy->mlx, &new_wall->upper, new_wall->width, new_wall->gap_start, 0x00AA55AA);
 	// printf("creating lower rectangle with size w[%d]h[%d]\n", new_wall->width, HEIGHT - new_wall->gap_start - new_wall->gap_size);
@@ -176,6 +170,15 @@ void	create_wall(t_flappy *flappy) {
 	flappy->walls[i + 1] = NULL;
 }
 
+void	check_collision(t_flappy *flappy) {
+	int i = 0;
+
+	for (i = 0; flappy->walls && flappy->walls[i]; i++)
+	{
+		// if (flappy->walls[i]->x + flappy->walls[i]->width  >= flappy->px)
+	}
+}
+
 void	print_walls(t_flappy *flappy) {
 	for (int i = 0; flappy->walls && flappy->walls[i]; i++)
 	{
@@ -185,17 +188,25 @@ void	print_walls(t_flappy *flappy) {
 }
 
 int game_engine(t_flappy *flappy) {
+	if (flappy->g_state == MENU)
+	{
+
+		return 0;
+	}
 	//move
 	//draw
-	y_movement(flappy);
+	if (flappy->g_state == PLAYING)
+	{
+		y_movement(flappy);
+		check_for_walls(flappy);
+		move_walls(flappy);
+	}
 	create_image(flappy->mlx, &flappy->frame, WIDTH, HEIGHT);
 	print_to_frame(&flappy->player, &flappy->frame, flappy->px, flappy->py);
 	print_walls(flappy);
 	mlx_clear_window(flappy->mlx, flappy->win);
 	mlx_put_image_to_window(flappy->mlx, flappy->win, flappy->frame.img, 0, 0);
 	mlx_destroy_image(flappy->mlx, flappy->frame.img);
-	check_for_walls(flappy);
-	move_walls(flappy);
 }
 
 
@@ -205,6 +216,7 @@ void	init_flappy(t_flappy *flappy) {
 	create_square(flappy->mlx, &flappy->player, 64, 0x00FF0000);
 	create_square(flappy->mlx, &flappy->floor, 64, 0x00FF00FF);
 	create_square(flappy->mlx, &flappy->floor2, 64, 0x00FF55FF);
+	flappy->state = MENU;
 	flappy->px = WIDTH/2;
 	flappy->py = HEIGHT/2;
 	flappy->key_space = 0;
@@ -212,6 +224,9 @@ void	init_flappy(t_flappy *flappy) {
 	flappy->jumping_speed = 8.0;
 	flappy->wall_gap = 20;
 	flappy->walls = NULL;
+	flappy->settings[PILLAR_GAP] = 200;
+	flappy->settings[WALL_GAP] = 500;
+	flappy->settings[PILLAR_WIDTH] = 50;
 	gettimeofday(&flappy->start_time, NULL);
 	flappy->state = FALLING;
 }

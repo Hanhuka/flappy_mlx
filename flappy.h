@@ -26,6 +26,7 @@
 # include <sys/errno.h>
 # include <sys/time.h>
 # include <math.h>
+# include "X11/keysym.h"
 
 # define SPATH "sprites/"
 
@@ -34,6 +35,15 @@
 
 #define FALLING 0
 #define JUMPING 1
+
+#define MENU 0
+#define PLAYING 1
+
+#define PILLAR_GAP 0
+#define WALL_GAP 1
+#define PILLAR_WIDTH 2
+
+#define SETTINGS_SIZE 3
 
 typedef struct s_img
 {
@@ -57,7 +67,9 @@ typedef struct s_walls
 }			t_walls;
 
 typedef struct s_flappy {
-	struct timeval start_time, check_time;
+	int		g_state;
+	int		selection;
+	struct	timeval start_time, check_time;
 	t_walls	**walls;
 	double	time_diff;
 	double	gravity;
@@ -76,6 +88,7 @@ typedef struct s_flappy {
 	t_img	floor2;
 	t_img	background;
 	int		key_space;
+	int		settings[3];
 }			t_flappy;
 #endif
 
