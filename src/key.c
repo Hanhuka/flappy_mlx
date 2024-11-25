@@ -9,8 +9,23 @@ int key_down(int code, t_flappy *flappy) {
 		printf("down!\n");
 	if (code == SPACE && flappy->key_space == 0)
 	{
-		printf("space!\n");
 		flappy->key_space = 1;
+		printf("space! = %d\n", flappy->key_space);
+	}
+	return 0;
+}
+
+int key_up2(int code, t_flappy *flappy) {
+	printf("keydown space = %d\n", code);
+	printf("%d\n", code);
+	if (code == ESC)
+		close_game(flappy);
+	if (code == 'a')
+		printf("down!\n");
+	if (code == SPACE && flappy->key_space == 1)
+	{
+		flappy->key_space = 0;
+		printf("space! = %d\n", flappy->key_space);
 	}
 	return 0;
 }
@@ -40,8 +55,10 @@ int key_up(int code, t_flappy *flappy) {
 		}
 		if (code == XK_Right)
 		{
-			int upper_limit = 400;
-			if ((flappy->settings[flappy->selection] + 10) >= upper_limit)
+			int upper_limit = 500;
+			if (flappy->selection == WALL_GAP)
+				return 0;
+			if ((flappy->settings[flappy->selection] + 10) > upper_limit)
 				return 0;
 			flappy->settings[flappy->selection] += 10;
 			delete_wall(flappy);
@@ -75,6 +92,13 @@ int key_up(int code, t_flappy *flappy) {
 			flappy->selection += 1;
 			flappy->selection = flappy->selection % SETTINGS_SIZE;
 		}
+	}
+	else if (flappy->g_state == LOSS) {
+		if (code == SPACE)
+		{
+			flappy->g_state = MENU;
+			reset_game(flappy);
+		}	
 	}
 	return 0;
 }

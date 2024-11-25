@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   so_long.h                                          :+:      :+:    :+:   */
+/*   flappy.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ralves-g <ralves-g@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/03/07 16:39:27 by ralves-g          #+#    #+#             */
-/*   Updated: 2024/03/04 22:12:36 by ralves-g         ###   ########.fr       */
+/*   Updated: 2024/11/25 16:03:33 by ralves-g         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@
 
 #define MENU 0
 #define PLAYING 1
+#define LOSS 2
 
 #define PILLAR_GAP 0
 #define WALL_GAP 1
@@ -66,6 +67,7 @@ typedef struct s_walls
 	int		gap_start;
 	int		x;
 	int		width;
+	int		passed;
 }			t_walls;
 
 typedef struct s_flappy {
@@ -83,6 +85,7 @@ typedef struct s_flappy {
 	double	py;
 	double	y_speed;
 	int		wall_gap;
+	int		score;
 	t_img	frame;
 	t_img	player;
 	t_img	pipe;
@@ -113,3 +116,6 @@ void	delete_wall(t_flappy *flappy);
 void	print_character(t_flappy *flappy, char c, int x_start, int y_start, int width, int height, t_img *font);
 void	print_phrase(t_flappy *flappy, char *str, int x_start, int y_start, int width, int height, int spacing, t_img *font);
 char	*ft_itoa(int n);
+void	init_flappy(t_flappy *flappy);
+void	reset_game(t_flappy *flappy);
+int key_up2(int code, t_flappy *flappy);

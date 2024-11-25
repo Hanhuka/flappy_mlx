@@ -146,6 +146,7 @@ void	create_wall(t_flappy *flappy) {
 	// printf("new_wall = %p\n", new_wall);
 	new_wall->gap_size = flappy->settings[PILLAR_GAP];
 	i = walls_size(tmp);
+	new_wall->passed = 0;
 	// if (i > 0)
 	// 	new_wall->gap_start = 64 * (rand() % 5 - 2) + tmp[i - 1]->gap_start;
 	// else
@@ -172,11 +173,38 @@ void	create_wall(t_flappy *flappy) {
 	flappy->walls[i + 1] = NULL;
 }
 
+void	reset_game(t_flappy *flappy) {
+	if (flappy->walls)
+	{
+		while (walls_size(flappy->walls))
+			delete_wall(flappy);
+	}
+	init_flappy(flappy);
+}
+
 void	check_collision(t_flappy *flappy) {
 	int i = 0;
 
+	if (flappy->py < 0 || flappy->py + flappy->player.height > HEIGHT) {			flappy->g_state = LOSS;
+		return ;
+	}
 	for (i = 0; flappy->walls && flappy->walls[i]; i++)
 	{
+		if (!flappy->walls[i]->passed && \
+			(flappy->px >= flappy->walls[i]->x && flappy->px <= flappy->walls[i]->x + flappy->walls[i]->width) || \
+			(flappy->px + flappy->player.width >=  flappy->walls[i]->x && flappy->px + flappy->player.width <= flappy->walls[i]->x + flappy->walls[i]->width))
+		{
+			if (flappy->py <= flappy->walls[i]->gap_start || flappy->py + flappy->player.height >= flappy->walls[i]->gap_start + flappy->walls[i]->gap_size)
+			{
+				flappy->g_state = LOSS;
+				return ;
+			}
+		}
+		if (!flappy->walls[i]->passed && flappy->walls[i]->x < flappy->px - flappy->player.width)
+		{
+			flappy->walls[i]->passed = 1;
+			flappy->score += 1;
+		}
 		// if (flappy->walls[i]->x + flappy->walls[i]->width  >= flappy->px)
 	}
 }
@@ -193,15 +221,6 @@ int game_engine(t_flappy *flappy) {
 	create_image(flappy->mlx, &flappy->frame, WIDTH, HEIGHT);
 	if (flappy->g_state == MENU)
 	{
-		// char *nbr = ft_itoa(flappy->settings[flappy->selection]);
-		// if (flappy->selection == PILLAR_GAP)
-		// 	print_phrase(flappy, "pillar gap", 20, 20, 50, 40, 10, );
-		// else if (flappy->selection == WALL_GAP)
-		// 	print_phrase(flappy, "wall gap", 20, 20, 50, 40, 10);
-		// else
-		// 	print_phrase(flappy, "wall width", 20, 20, 50, 40, 10);
-
-
 			char *nbr = ft_itoa(flappy->settings[PILLAR_GAP]);
 			print_phrase(flappy, "pillar gap", 20, 20, 50, 40, 10, flappy->selection == PILLAR_GAP ?  &flappy->font_selected : &flappy->font);
 			print_phrase(flappy, nbr, 800, 20, 50, 40, 10, flappy->selection == PILLAR_GAP ?  &flappy->font_selected : &flappy->font);
@@ -216,8 +235,6 @@ int game_engine(t_flappy *flappy) {
 			print_phrase(flappy, "wall width", 20, 140, 50, 40, 10, flappy->selection == PILLAR_WIDTH ? &flappy->font_selected : &flappy->font);
 			print_phrase(flappy, nbr, 800, 140, 50, 40, 10, flappy->selection == PILLAR_WIDTH ? &flappy->font_selected : &flappy->font);
 			free(nbr);
-		// print_phrase(flappy, "abcdefghijklmnopqrstuvwxyz", 20, 200, 100, 80, 10);
-
 	}
 	//move
 	//draw
@@ -225,11 +242,27 @@ int game_engine(t_flappy *flappy) {
 	{
 		y_movement(flappy);
 		move_walls(flappy);
+		check_collision(flappy);
 	}
 	check_for_walls(flappy);
 	print_to_frame(&flappy->player, &flappy->frame, flappy->px, flappy->py);
-	
+
 	print_walls(flappy);
+	if (flappy->g_state == PLAYING)
+	{
+		char *nbr = ft_itoa(flappy->score);
+		print_phrase(flappy, "score", 20, 20, 20, 20, 5, &flappy->font);
+		print_phrase(flappy, nbr, 200, 20, 20, 20, 5, &flappy->font);
+		free(nbr);
+	}
+	if (flappy->g_state == LOSS)
+	{
+		char *nbr = ft_itoa(flappy->score);
+		print_phrase(flappy, "score", WIDTH / 2 - (((6 + strlen(nbr)) * 75) / 2), HEIGHT / 2 - 30, 70, 60, 5, &flappy->font);
+		print_phrase(flappy, nbr, WIDTH / 2 + ((5 * 75) / 2) - (strlen(nbr) * 75 / 2), HEIGHT / 2 - 30, 70, 60, 5, &flappy->font);
+		free(nbr);
+		print_phrase(flappy, "press space to retry", WIDTH / 2 - ((20 * 75) / 2), HEIGHT / 2 + 80, 70, 60, 5, &flappy->font_selected);
+	}
 	mlx_clear_window(flappy->mlx, flappy->win);
 	mlx_put_image_to_window(flappy->mlx, flappy->win, flappy->frame.img, 0, 0);
 	mlx_destroy_image(flappy->mlx, flappy->frame.img);
@@ -271,25 +304,17 @@ void	print_character(t_flappy *flappy, char c, int x_start, int y_start, int wid
 }
 
 void	init_flappy(t_flappy *flappy) {
-	int h;
-	int w;
-	flappy->mlx = mlx_init();
-	flappy->win = mlx_new_window(flappy->mlx, WIDTH, HEIGHT, "YAAA");
-	create_square(flappy->mlx, &flappy->player, 64, 0x00FF0000);
-	create_square(flappy->mlx, &flappy->floor, 64, 0x00FF00FF);
-	create_square(flappy->mlx, &flappy->floor2, 64, 0x00FF55FF);
-	create_xpm_image(flappy->mlx, &flappy->font, "font.xpm");
-	create_xpm_image(flappy->mlx, &flappy->font_selected, "font_selected.xpm");
 	flappy->g_state = MENU;
 	flappy->px = WIDTH/2;
 	flappy->py = HEIGHT/2;
+	flappy->score = 0;
 	flappy->key_space = 0;
 	flappy->gravity = 2.0;
 	flappy->jumping_speed = 8.0;
 	flappy->wall_gap = 20;
 	flappy->walls = NULL;
 	flappy->selection = 0;
-	flappy->settings[PILLAR_GAP] = 200;
+	flappy->settings[PILLAR_GAP] = 300;
 	flappy->settings[WALL_GAP] = 500;
 	flappy->settings[PILLAR_WIDTH] = 50;
 	gettimeofday(&flappy->start_time, NULL);
@@ -300,10 +325,20 @@ void	init_flappy(t_flappy *flappy) {
 int	main(void) {
 	t_flappy flappy;
 
+
+	int h;
+	int w;
+	flappy.mlx = mlx_init();
+	flappy.win = mlx_new_window(flappy.mlx, WIDTH, HEIGHT, "YAAA");
+	create_square(flappy.mlx, &flappy.player, 64, 0x00FF0000);
+	create_square(flappy.mlx, &flappy.floor, 64, 0x00FF00FF);
+	create_square(flappy.mlx, &flappy.floor2, 64, 0x00FF55FF);
+	create_xpm_image(flappy.mlx, &flappy.font, "font.xpm");
+	create_xpm_image(flappy.mlx, &flappy.font_selected, "font_selected.xpm");
 	init_flappy(&flappy);
 	mlx_key_hook(flappy.win, key_up, &flappy);
 	// mlx_hook(flappy.win, 2, 1L << 0, key_down, &flappy);
-	// mlx_hook(flappy.win, 3, 1L << 1, key_up, &flappy);
+	// mlx_hook(flappy.win, 3, 1L << 1, key_up2, &flappy);
 	mlx_hook(flappy.win, 17, 0, close_game, &flappy);
 	mlx_loop_hook(flappy.mlx, game_engine, &flappy);
 	mlx_loop(flappy.mlx);
